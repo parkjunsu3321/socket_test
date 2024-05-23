@@ -3,12 +3,19 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
 
-app = FastAPI()
+app = FastAPI(
+    title="My FastAPI Application",
+    description="This is a sample FastAPI application.",
+    version="1.0.0",
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # 웹 소켓 클라이언트 관리를 위한 리스트
 websocket_clients = []
 
-@app.websocket("/ws") # 웹 소켓을 만드는 부분
+@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     print(f"client connected : {websocket.client}")
     await websocket.accept()
@@ -28,3 +35,16 @@ async def websocket_endpoint(websocket: WebSocket):
     except:
         # 클라이언트 연결이 종료되면 리스트에서 제거
         websocket_clients.remove(websocket)
+
+# 테스트용 기본 라우트
+@app.get("/")
+async def get():
+    return HTMLResponse("<h1>Hello, World!</h1>")
+
+# Jinja2 템플릿 설정
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/items/{id}", response_class=HTMLResponse)
+async def read_item(request: Request, id: str):
+    return templates.TemplateResponse("item.html", {"request": request, "id": id})
+
