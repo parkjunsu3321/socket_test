@@ -94,13 +94,11 @@ Pygments==2.17.2
 PyJWT==2.8.0
 PyMySQL==1.1.0
 pyparsing==3.1.2
-pypiwin32==223
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-jose==3.3.0
 python-multipart==0.0.9
 pytz==2024.1
-pywin32==306
 PyYAML==6.0.1
 pyzmq==25.1.2
 rapidfuzz==3.9.1
@@ -116,8 +114,6 @@ stack-data==0.6.3
 starlette==0.36.3
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
-tensorflow==2.16.1
-tensorflow-intel==2.16.1
 termcolor==2.4.0
 thefuzz==0.22.1
 tornado==6.4
