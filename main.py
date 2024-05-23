@@ -1,6 +1,5 @@
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
 
 app = FastAPI(
@@ -36,13 +35,6 @@ async def websocket_endpoint(websocket: WebSocket):
         # 클라이언트 연결이 종료되면 리스트에서 제거
         websocket_clients.remove(websocket)
 
-# 테스트용 기본 라우트
-@app.get("/")
-async def get():
-    return HTMLResponse("<h1>Hello, World!</h1>")
-
-# Jinja2 템플릿 설정
-templates = Jinja2Templates(directory="templates")
 
 @app.get("/items/{id}", response_class=HTMLResponse)
 async def read_item(request: Request, id: str):
