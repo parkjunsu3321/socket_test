@@ -12,6 +12,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+@app.get("/client")
+async def client(request: Request):
+    return templates.TemplateResponse("client.html", {"request":request})
+
 # 웹 소켓 클라이언트 관리를 위한 리스트
 websocket_clients = []
 
