@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse
 from fastapi.logger import logger
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI(
     title="My FastAPI Application",
@@ -10,6 +11,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+templates = Jinja2Templates(directory="templates")
 
 @app.get("/client")
 async def client(request: Request):
