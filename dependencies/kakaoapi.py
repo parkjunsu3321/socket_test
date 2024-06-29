@@ -78,6 +78,7 @@ def get_coords_from_address(address):
                 xy_list = []
                 xy_list.append(x)
                 xy_list.append(y)
+                print(xy_list)
                 return xy_list
             else:
                 print(f"'{address}'에 대한 검색 결과가 없습니다.")

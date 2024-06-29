@@ -25,8 +25,8 @@ class UserPostResponse(BaseModel):
 
 class KeyWordDataRequest(BaseModel):
     class DTO(BaseModel):
-        x: float
-        y: float
+        x: float = 126.734086
+        y: float = 37.413294
         distan: int = 1000 
         keyword: str
     data: DTO
