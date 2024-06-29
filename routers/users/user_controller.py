@@ -24,7 +24,7 @@ async def getInfo(
     keywordInfor, address = search_places_nearby(x,y,distance,keyword)
     if(keywordInfor != None):
         for i in range(len(address)):
-            xy_list = get_coords_from_address(address)
+            xy_list = get_coords_from_address(address[i])
             keywordInfor['x'].append(xy_list[0])
             keywordInfor['y'].append(xy_list[1])
             print(xy_list)
