@@ -1,68 +1,71 @@
-from fastapi import FastAPI, WebSocket, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+import logging
+import traceback, uvicorn
+from urllib.request import Request
 
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
-class GroupDTO(BaseModel):
-    username: str
-    groupname: str
+from dependencies.database import init_db
+from dependencies.config import get_config
 
-# 웹 소켓 클라이언트 및 그룹 관리를 위한 딕셔너리
-websocket_clients = {}
-websocket_group = {}
+from routers import router as main_router
 
-@app.get("/client", response_class=HTMLResponse)
-async def client(request: Request):
-    return templates.TemplateResponse("client.html", {"request": request})
+init_db(config=get_config())
 
-@app.post("/createGroup")
-async def create_group(payload: GroupDTO):
-    if payload.groupname not in websocket_group:
-        websocket_group[payload.groupname] = []
-    websocket_group[payload.groupname].append(payload.username)
-    return {"groupname": payload.groupname}
+app = FastAPI(
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
-@app.post("/joinGroup")
-async def join_group(payload: GroupDTO):
-    if payload.groupname in websocket_group:
-        websocket_group[payload.groupname].append(payload.username)
-    return {"groupname": payload.groupname}
 
-@app.websocket("/ws/{username}/{groupname}")
-async def websocket_endpoint(websocket: WebSocket, username: str, groupname: str):
-    await websocket.accept()
-    print(f"Client connected: {username}")
-    
-    if groupname not in websocket_group:
-        websocket_group[groupname] = []
-    websocket_group[groupname].append(username)
-    
-    websocket_clients[username] = websocket
-    
-    try:
-        await websocket.send_text(f"Welcome to the group {groupname}, {username}")
-        while True:
-            data = await websocket.receive_text()
-            print(f"Message received: {data} from {username}")
-            
-            # 같은 그룹의 유저에게만 메시지 전송
-            for member in websocket_group[groupname]:
-                if member != username and member in websocket_clients:
-                    await websocket_clients[member].send_text(f"{username}: {data}")
-    except Exception as e:
-        print(f"Connection closed for {username}: {e}")
-    finally:
-        # 클라이언트 연결이 종료되면 리스트에서 제거
-        websocket_group[groupname].remove(username)
-        del websocket_clients[username]
-        print(f"Client {username} disconnected")
+app.include_router(router=main_router)
 
-def run():
-    import uvicorn
-    uvicorn.run(app)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    max_age=86400,
+)
+
+
+async def add_cors_to_response(
+    request: Request, response: JSONResponse
+) -> JSONResponse:
+    origin = request.headers.get("origin")
+
+    # Set CORS CORS header.
+    if origin:
+        cors = CORSMiddleware(
+            app=app,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+        response.headers.update(cors.simple_headers)
+        has_cookie = "cookie" in request.headers
+
+        # Allow Origin header if CORS is allowed.
+        if cors.allow_all_origins and has_cookie:
+            response.headers["Access-Control-Allow-Origin"] = origin
+        elif not cors.allow_all_origins and cors.is_allowed_origin(
+            origin=origin,
+        ):
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers.add_vary_header("Origin")
+    return response
+
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    logging.error(traceback.format_exc())
+    response = JSONResponse(status_code=500, content={"context": exc})
+    return await add_cors_to_response(request=request, response=response)
 
 if __name__ == "__main__":
-    run()
+    uvicorn.run(app, host="0.0.0.0", port=8000)

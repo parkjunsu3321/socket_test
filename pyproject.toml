@@ -2,15 +2,17 @@
 name = "fastapi-proj"
 version = "0.1.0"
 description = ""
-authors = ["KYEONGMIN CHO <ggingmin@gmail.com>"]
+authors = ["Reaction <presentj94@gmail.com>"]
 readme = "README.md"
-packages = [{include = "fastapi_proj"}]
+packages = []
 
 [tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.104.1"
+python = ">=3.9,<3.11"
+fastapi = "^0.103.2"
+sqlalchemy = "^1.3.24"
 uvicorn = "^0.24.0.post1"
-
+pydantic-settings = "^2.2.1"
+asyncpg = "^0.29.0"
 
 [build-system]
 requires = ["poetry-core"]
